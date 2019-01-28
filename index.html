@@ -1,0 +1,83 @@
+<html>
+  <head>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript">
+    var redirect_uri = 'https://oxxinexx.github.io/spotify-code-callback.html'; // Your redirect uri
+    
+    var stateKey = 'spotify_auth_state';
+    var state = generateRandomString(16);
+    
+    function processStep1(){
+        var client_id = jQuery('#client_id').val();
+        var client_secret = jQuery('#client_secret').val();
+        var scopes = jQuery('#scope').val();
+        
+        localStorage.client_id = client_id;
+        localStorage.client_secret = client_secret;
+        localStorage.scopes = scopes;
+      
+        window.location.replace('https://accounts.spotify.com/authorize?response_type=code&client_id=' + client_id  + '&scope=' + scopes + '&redirect_uri=' + redirect_uri + '&state=' + state);
+    }
+    
+    function processStep3(){
+      var refresh_token = jQuery('#refresh_token').val();
+      var client_id = jQuery('#client_id').val();
+      var client_secret = jQuery('#client_secret').val();
+      localStorage.refresh_token = refresh_token;
+      
+      console.log('refresh token: ' + refresh_token);
+      console.log('client id: ' + client_id);
+      console.log('client secret: ' + client_secret);
+      
+      jQuery.ajax({
+        method: 'POST',
+        url: 'https://accounts.spotify.com/api/token',
+        headers: {
+          'Authorization': 'Basic ' + btoa(client_id + ':' + client_secret)
+        },
+        data : {
+          grant_type: 'refresh_token',
+          refresh_token: refresh_token
+        },
+        error: function(xhr, err, exception){
+          console.log(err);
+          console.log(exception);
+        },
+        success: function(data){
+          console.log(data);
+        }
+      });
+    }
+    
+    function generateRandomString(length) {
+     var text = '';
+      var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+      for (var i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+      }
+      return text;
+    }
+    
+    jQuery(document).ready(() => {
+        jQuery('#button_step1').click(() => processStep1());
+        jQuery('#button_step3').click(() => processStep3());
+        
+        jQuery('#client_id').val(localStorage.client_id);
+        jQuery('#client_secret').val(localStorage.client_secret);
+        jQuery('#scope').val(localStorage.scope);
+        jQuery('#refresh_token').val(localStorage.refresh_token);
+    });
+    </script>
+  </head>
+  <body>
+     <p>Install: <a href="https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi?hl=en-US" target="_blank">the plugin first</a>
+    <div>Scope: <input type="text" id="scope" /></div>
+    <div>client id: <input type="text" id="client_id" /></div>
+    <div>client secret: <input type="text" id="client_secret" /></div>
+    <div><button id="button_step1">Step 1</button></div>
+    <div>Refresh token: <input type="text" id="refresh_token" /></div>
+    <div><button id="button_step3">Step 3</button></div>
+  </body>
+</html>
+

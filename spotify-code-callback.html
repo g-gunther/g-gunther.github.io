@@ -1,0 +1,147 @@
+<html>
+  <head>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript">
+      var code = null;
+      var client_id = localStorage.client_id;
+      var client_secret = localStorage.client_secret;
+      var redirect_uri = 'https://oxxinexx.github.io/spotify-code-callback.html'; // Your redirect uri
+    
+      jQuery(document).ready(() => {
+          var urlParams = new URLSearchParams(window.location.search);
+          if(urlParams.has('code')){
+            code = urlParams.get('code')
+            jQuery('#code').html(code);
+            
+            jQuery('#client_id').html(client_id);
+            jQuery('#client_secret').html(client_secret);
+            
+            jQuery('#next_step').show();
+          } else {
+            jQuery('#code').html('No code found');
+          }
+          
+          jQuery('#button_step2').click(() => processStep2());
+          jQuery('#button_step3').click(() => processStep3());
+      });
+      
+      function processStep2(){
+        jQuery.ajax({
+            url: 'https://accounts.spotify.com/api/token',
+            method: 'POST',
+            data: {
+              code: code,
+              grant_type: 'authorization_code',
+              redirect_uri: redirect_uri
+            },
+            headers: {
+              'Authorization': 'Basic ' + btoa(client_id + ':' + client_secret),
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+              'Access-Control-Allow-Headers': 'Origin, Content-Type, X-Auth-Token'
+            },
+            error: function(xhr, err, exception){
+              console.log(err);
+              console.log(exception);
+            },
+            success : function (data){
+              console.log(data);
+              jQuery('#result').show();
+              
+              jQuery('#access_token').html(data.access_token);
+              jQuery('#expires_in').html(data.expires_in);
+              
+              jQuery('#refresh_token').html(data.refresh_token);
+              localStorage.refresh_token = data.refresh_token;
+              
+              jQuery('#scope').html(data.scope);
+              jQuery('#token_type').html(data.token_type);
+            }
+        });
+        
+      function processStep3(){
+        var refresh_token = jQuery('#refresh_token').html();
+        
+        jQuery.ajax({
+          method: 'POST',
+          url: 'https://accounts.spotify.com/api/token',
+          headers: {
+            'Authorization': 'Basic ' + btoa(client_id + ':' + client_secret)
+          },
+          data : {
+            grant_type: 'refresh_token',
+            refresh_token: refresh_token
+          },
+          error: function(xhr, err, exception){
+            console.log(err);
+            console.log(exception);
+          },
+          success: function(data){
+            console.log(data);
+          }
+        });
+      }
+
+    /*request.post(authOptions, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+
+        var access_token = body.access_token,
+            refresh_token = body.refresh_token;
+
+        var options = {
+          url: 'https://api.spotify.com/v1/me',
+          headers: { 'Authorization': 'Bearer ' + access_token },
+          json: true
+        };
+
+        // use the access token to access the Spotify Web API
+        request.get(options, function(error, response, body) {
+          console.log(body);
+        });
+
+        // we can also pass the token to the browser to make requests from there
+        res.redirect('/#' +
+          querystring.stringify({
+            access_token: access_token,
+            refresh_token: refresh_token
+          }));
+      } else {
+        res.redirect('/#' +
+          querystring.stringify({
+            error: 'invalid_token'
+          }));
+      }
+    });*/
+    
+    
+    
+    
+      }
+    </script>
+    
+  </head>
+  <body>
+      <h1>Sportify - Code callback</h1>
+      <div>
+          Code: <span id="code"></span>
+      </div>
+      <div>
+          Client id: <span id="client_id"></span>
+      </div>
+      <div>
+          Client secret: <span id="client_secret"></span>
+      </div>
+      <div id="next_step" style="display:none;">
+        <div><button id="button_step2">Step 2</button></div>
+      </div>
+    <div id="result" style="display:none;">
+      <div>access token: <span id="access_token"></span></div>
+      <div>expires in: <span id="expires_in"></span></div>
+      <div>refresh token: <span id="refresh_token"></span></div>
+      <div>scope: <span id="scope"></span></div>
+      <div>token type: <span id="token_type"></span></div>
+      
+      <div><button id="button_step3">Step 3</button></div>
+    </div>
+  </body>
+</html>
