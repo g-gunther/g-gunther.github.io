@@ -36,7 +36,9 @@
             },
             headers: {
               'Authorization': 'Basic ' + btoa(client_id + ':' + client_secret),
-              'Access-Control-Allow-Origin': '*'
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+              'Access-Control-Allow-Headers': 'access-control-allow-origin,authorization'
             },
             error: function(xhr, err, exception){
               console.log(err);
