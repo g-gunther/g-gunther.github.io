@@ -1,0 +1,107 @@
+<html>
+  <head>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript">
+      var appId = null;
+      var appSecret = null;
+      var scope = "user_profile,user_media";
+      var authCode = null;
+      var redirect_uri = 'https://g-gunther.github.io/instagram/auth.html'; // Your redirect uri
+    
+      jQuery(document).ready(() => {
+        jQuery('#app_id').val(localStorage.instagram_app_id);
+        jQuery('#app_secret').val(localStorage.instagram_app_secret);
+        jQuery('#scope').val(localStorage.scope);
+        buildAuthUrl();
+
+        var urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.has('code')){
+            authCode = urlParams.get('code')
+            if(authCode.substring(authCode.length - 2) == '#_') {
+                authCode = authCode.substring(0, authCode.length - 3);
+            }
+            jQuery('#auth_code').html(authCode);
+        }
+
+        jQuery('#button_apply_app_id').click(() => applyAppId());
+        jQuery('#button_request_token').click(() => requestToken());
+      });
+      
+      function applyAppId(){
+        appId = jQuery('#app_id').val();
+        localStorage.instagram_app_id = appId;
+
+        buildAuthUrl();
+      }
+
+      function buildAuthUrl() {
+        var authUrl = 'https://api.instagram.com/oauth/authorize?client_id='+ appId +'&redirect_uri='+ redirect_uri +'&scope='+ scope +'&response_type=code';
+        jQuery('#auth_url').html(authUrl);
+        jQuery('#auth_link').attr('href', authUrl);
+      }
+
+      function requestToken() {
+        appSecret = jQuery('#app_secret').val();
+        localStorage.instagram_app_secret = appSecret;
+
+        jQuery.ajax({
+            url: 'https://api.instagram.com/oauth/access_token',
+            method: 'POST',
+            data: {
+                client_id: appId,
+                client_secret: appSecret,
+                grant_type: 'authorization_code',
+                redirect_uri: redirect_uri,
+                code: authCode
+            },
+            error: function(xhr, err, exception){
+              console.log(err);
+              console.log(exception);
+            },
+            success : function (data){
+              console.log(data);
+              jQuery('#result').show();
+              
+              jQuery('#access_token').html(data.access_token);
+              jQuery('#user_id').html(data.user_id);
+            }
+        });
+      }
+
+    </script>
+    
+  </head>
+  <body>
+      <h1>Instagram - Auth</h1>
+      <h2>Auth url</h2>
+      <div>
+        AppId: <input type="text" id="app_id" />
+        <button id="button_apply_app_id">Apply</button>
+      </div>
+      <div>
+        Scope: <input type="text" id="user_profile,user_media" />
+      </div>
+      <div>
+        <span id="auth_url"></span>
+        <a id="auth_link" href="https://api.instagram.com/oauth/authorize?client_id={app-id}&redirect_uri={redirect-uri}&scope=user_profile,user_media&response_type=code" target="_blank">Demande Authent</a>
+      </div>
+      <h2>Auth code</h2>
+      <div>
+        Code: <span id="auth_code"></span>
+      </div>
+      <div>
+        App secret: <input type="text" id="app_secret" />
+      </div>
+      <div>
+        <div><button id="button_request_token">Request token</button></div>
+      </div>
+      <div id="#result">
+        <div>
+            Access token: <span id="access_token"></span>
+        </div>
+        <div>
+            User id: <span id="user_id"></span>
+        </div>
+      </div>
+  </body>
+</html>
