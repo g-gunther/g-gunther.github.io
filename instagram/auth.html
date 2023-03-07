@@ -14,6 +14,8 @@
         if(localStorage.scope) {
             scope = localStorage.scope;
         }
+        authCode = localStorage.instagram_auth_code;
+        jQuery('#auth_code').html(authCode);
         jQuery('#scope').val(scope);
         
         buildAuthUrl();
@@ -24,6 +26,7 @@
             if(authCode.substring(authCode.length - 2) == '#_') {
                 authCode = authCode.substring(0, authCode.length - 3);
             }
+            localStorage.instagram_auth_code = authCode;
             jQuery('#auth_code').html(authCode);
         }
 
