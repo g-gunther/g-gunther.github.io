@@ -9,15 +9,20 @@
       var redirect_uri = 'https://g-gunther.github.io/instagram/auth.html'; // Your redirect uri
     
       jQuery(document).ready(() => {
-        jQuery('#app_id').val(localStorage.instagram_app_id);
-        jQuery('#app_secret').val(localStorage.instagram_app_secret);
+        appId = localStorage.instagram_app_id;
+        jQuery('#app_id').val(locappId);
+
+        appSecret = localStorage.instagram_app_secret;
+        jQuery('#app_secret').val(appSecret);
+
         if(localStorage.scope) {
             scope = localStorage.scope;
         }
+        jQuery('#scope').val(scope);
+
         authCode = localStorage.instagram_auth_code;
         jQuery('#auth_code').html(authCode);
-        jQuery('#scope').val(scope);
-        
+
         buildAuthUrl();
 
         var urlParams = new URLSearchParams(window.location.search);
