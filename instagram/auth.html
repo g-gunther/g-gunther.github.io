@@ -11,7 +11,11 @@
       jQuery(document).ready(() => {
         jQuery('#app_id').val(localStorage.instagram_app_id);
         jQuery('#app_secret').val(localStorage.instagram_app_secret);
-        jQuery('#scope').val(localStorage.scope);
+        if(localStorage.scope) {
+            scope = localStorage.scope;
+        }
+        jQuery('#scope').val(scope);
+        
         buildAuthUrl();
 
         var urlParams = new URLSearchParams(window.location.search);
@@ -29,7 +33,9 @@
       
       function applyAppId(){
         appId = jQuery('#app_id').val();
+        scope = jQuery('#scope').val();
         localStorage.instagram_app_id = appId;
+        localStorage.scope = scope;
 
         buildAuthUrl();
       }
@@ -76,10 +82,12 @@
       <h2>Auth url</h2>
       <div>
         AppId: <input type="text" id="app_id" />
-        <button id="button_apply_app_id">Apply</button>
       </div>
       <div>
         Scope: <input type="text" id="user_profile,user_media" />
+      </div>
+      <div>
+        <button id="button_apply_app_id">Apply</button>
       </div>
       <div>
         <span id="auth_url"></span>
